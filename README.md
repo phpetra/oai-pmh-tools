@@ -1,5 +1,4 @@
-<<<<<<< HEAD
-OAI-PMH Tools - Framework independent PHP Tools for OAI-PMH
+oai-pmh-tools - Framework independent PHP Tools for OAI-PMH
 ================================================================
 
 The OaiPmhTools provides a set of classes for both Harvesting data sets from OAI-PMH servers and creating such a server.
@@ -64,9 +63,3 @@ First step is to configure some things:
 - the Harveste can use a mapper and a database...
 @todo complete this
 
-=======
-oai-pmh-tools
-=============
-
-Set of PHP tools for OAI-PMH
->>>>>>> 1a094f893be323de8f1fd0e326d0da02325b8c03
