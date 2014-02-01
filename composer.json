@@ -1,0 +1,26 @@
+{
+    "name": "phpetra/oai-pmh-tools",
+    "description": "Set of OAI-PMH tools. Both for harvesting, discovering and setting up a repository.",
+    "type": "library",
+    "keywords": [
+        "phpetra",
+        "oai-pmh",
+        "harvester"
+    ],
+    "homepage": "https://github.com/phpetra/OaiPmhTools",
+    "authors": [
+        {
+            "name": "Petra Dreiskämper",
+            "email": "phpetra@xs4all.nl",
+            "homepage": "http://dreis.nl/"
+        }
+    ],
+    "require": {
+        "php": ">=5.3.23"
+    },
+    "autoload": {
+        "psr-0": {
+            "OaiPmhTools": "src/"
+        }
+    }
+}
