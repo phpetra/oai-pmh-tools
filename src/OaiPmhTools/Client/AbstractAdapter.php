@@ -3,12 +3,12 @@
  * @author PHPetra
  * Date: 1/31/14
  * Time: 10:19 PM
- * 
+ *
  */
 
 namespace OaiPmhTools\Client;
 
-use OaiPmhTools\RuntimeException;
+use OaiPmhTools\OaiServerException;
 
 abstract class AbstractAdapter implements AdapterInterface {
 
@@ -77,10 +77,7 @@ abstract class AbstractAdapter implements AdapterInterface {
         $params = array('verb' => self::VERB_IDENTIFY);
         $uri = $this->getUri() . http_build_query($params);
 
-        $dom = $this->load($uri);
-        if ($dom) {
-            $this->receive(self::VERB_IDENTIFY, $dom);
-        }
+        $this->receive(self::VERB_IDENTIFY, $this->load($uri));
     }
 
     /**
@@ -99,9 +96,19 @@ abstract class AbstractAdapter implements AdapterInterface {
         $uri = $this->getUri() . http_build_query($params);
 
         $dom = $this->load($uri);
-        if ($dom) {
-            $this->receive(self::VERB_LIST_METADATA_FORMATS, $dom);
+
+        // extract metadata information
+        $metadataFormats = $dom->getElementsByTagName('metadataFormat');
+        $data = array();
+        foreach ($metadataFormats as $metaFormat) {
+            $format['metadataPrefix'] = $metaFormat->getElementsByTagname('metadataPrefix')->item(0)->nodeValue;
+            $format['schema'] = $metaFormat->getElementsByTagname('schema')->item(0)->nodeValue;
+            $format['metadataNamespace'] = $metaFormat->getElementsByTagname('metadataNamespace')->item(0)->nodeValue;
+
+            $data['metadataFormat'][] = $format;
         }
+
+        $this->response[self::VERB_LIST_METADATA_FORMATS] = $data;
     }
 
     /**
@@ -117,13 +124,15 @@ abstract class AbstractAdapter implements AdapterInterface {
         foreach ($responseElements as $element) {
             $data[$element] = $dom->getElementsByTagName($element)->item(0)->nodeValue;
         }
-        $this->response = $data;
+
+        $this->response[$verb] = $data;
     }
 
 
     /**
      * Generic way of handling the errors returned by the OAI-PMH server
      * @param $error \DOMElement
+     * @throws \OaiPmhTools\OaiServerException
      * @return bool
      */
     protected function handleServerError($error)
@@ -131,19 +140,18 @@ abstract class AbstractAdapter implements AdapterInterface {
         $code = $error->item(0)->getAttribute('code');
         $message = $error->item(0)->nodeValue;
 
-        fwrite(STDERR, "The server returned an error: {$code}, with message: {$message}.") . PHP_EOL;
-        return false;
+        throw new OaiServerException("The server returned an error: {$code}, with message: {$message}.");
     }
 
     /**
      * Returns the base URI used for calls with resumptionToken
-     * @throws \RuntimeException
+     * @throws \OaiPmhTools\OaiServerException
      * @return string
      */
     public function getUri()
     {
         if (null === $this->uri) {
-            throw new \RuntimeException('The uri of the external repository is not set.');
+            throw new OaiServerException('The uri of the external repository is not set.');
         }
         return trim($this->uri, '/') . '?';
     }

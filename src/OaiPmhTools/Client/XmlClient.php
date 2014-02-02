@@ -9,7 +9,7 @@
 namespace OaiPmhTools\Client;
 
 use DOMDocument;
-use OaiPmhTools\RuntimeException;
+use OaiPmhTools\OaiServerException;
 
 class XmlClient extends AbstractAdapter {
 
@@ -29,14 +29,13 @@ class XmlClient extends AbstractAdapter {
 
         $doc = @DOMDocument::load($uri);
         if (!$doc) {
-            fwrite(STDERR, 'Failed to load xml from the server.') . PHP_EOL;
-            return;
+            throw new OaiServerException('Failed to load xml from the server.');
         }
 
         // server returned an error
         $error = $doc->getElementsByTagName('error');
         if ($error->length > 0) {
-            return $this->handleServerError($error);
+            $this->handleServerError($error);
         }
 
         return $doc;

@@ -8,8 +8,9 @@
 
 namespace OaiPmhTest;
 
+use OaiPmhTools\Client\AbstractAdapter;
 use OaiPmhTools\Client\XmlClient;
-use OaiPmhTools\RuntimeException;
+use OaiPmhTools\OaiServerException;
 
 /**
  * Test
@@ -45,6 +46,27 @@ class XmlClientTest extends \PHPUnit_Framework_TestCase
         $this->client->identify();
     }
 
+    public function testCanCallIdentify()
+    {
+        $this->client
+            ->setUri($this->testRepo)
+            ->identify();
+        $response = $this->client->getResponse();
 
+        $this->assertArrayHasKey('repositoryName', $response[AbstractAdapter::VERB_IDENTIFY]);
+        $this->assertArrayHasKey('baseURL', $response[AbstractAdapter::VERB_IDENTIFY]);
+        // we could test all required elements but might not be needed
+    }
+
+    public function testRetrievingMetadataFormats()
+    {
+        $this->client
+            ->setUri($this->testRepo)
+            ->listMetadataFormats();
+        $response = $this->client->getResponse();
+
+        $this->assertArrayHasKey('metadataFormat', $response[AbstractAdapter::VERB_LIST_METADATA_FORMATS]);
+        $this->assertArrayHasKey('metadataPrefix', $response[AbstractAdapter::VERB_LIST_METADATA_FORMATS]['metadataFormat'][0]);
+    }
 
 }
