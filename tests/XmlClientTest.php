@@ -46,6 +46,7 @@ class XmlClientTest extends \PHPUnit_Framework_TestCase
         $this->client->identify();
     }
 
+    /** Ensure something works */
     public function testCanCallIdentify()
     {
         $this->client
