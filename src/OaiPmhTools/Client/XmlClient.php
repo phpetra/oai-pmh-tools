@@ -50,11 +50,6 @@ class XmlClient extends AbstractAdapter {
 
     }
 
-    public function listSets()
-    {
-
-    }
-
     public function listIdentifiers()
     {
 

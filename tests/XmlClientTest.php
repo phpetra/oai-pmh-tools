@@ -70,4 +70,16 @@ class XmlClientTest extends \PHPUnit_Framework_TestCase
         $this->assertArrayHasKey('metadataPrefix', $response[AbstractAdapter::VERB_LIST_METADATA_FORMATS]['metadataFormat'][0]);
     }
 
+    /** @expectedException RuntimeException */
+    public function testCanListSets()
+    {
+        $this->client
+            ->setUri($this->testRepo)
+            ->listSets();
+        $response = $this->client->getResponse();
+        // or noHierARchy
+        // how to test for two possibles?
+
+        //$this->assertArrayHasKey(AbstractAdapter::VERB_LIST_SETS, $response);
+    }
 }

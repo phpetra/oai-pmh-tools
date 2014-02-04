@@ -80,6 +80,27 @@ abstract class AbstractAdapter implements AdapterInterface {
         $this->receive(self::VERB_IDENTIFY, $this->load($uri));
     }
 
+
+    public function listSets()
+    {
+        $params = array('verb' => self::VERB_LIST_SETS);
+        $uri = $this->getUri() . http_build_query($params);
+
+        $dom = $this->load($uri);
+        $sets = $dom->getElementsByTagName('set');
+
+        $data = array();
+        foreach ($sets as $set) {
+            $spec['setSpec'] = $set->getElementsByTagname('setSpec')->item(0)->nodeValue;
+            $spec['setName'] = $set->getElementsByTagname('setName')->item(0)->nodeValue;
+            $spec['setDescription'] = $set->getElementsByTagname('setDescription')->item(0)->nodeValue;
+
+            $data['set'][] = $spec;
+        }
+
+        $this->response[self::VERB_LIST_SETS] = $data;
+    }
+
     /**
      * List the available metadata formats for the repo
      * If identifier is set it only returns the format for one particular item
