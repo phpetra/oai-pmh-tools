@@ -93,7 +93,9 @@ abstract class AbstractAdapter implements AdapterInterface {
         foreach ($sets as $set) {
             $spec['setSpec'] = $set->getElementsByTagname('setSpec')->item(0)->nodeValue;
             $spec['setName'] = $set->getElementsByTagname('setName')->item(0)->nodeValue;
-            $spec['setDescription'] = $set->getElementsByTagname('setDescription')->item(0)->nodeValue;
+            if ($set->getElementsByTagname('setDescription')->length > 0) {
+                $spec['setDescription'] = $set->getElementsByTagname('setDescription')->item(0)->nodeValue;
+            }
 
             $data['set'][] = $spec;
         }

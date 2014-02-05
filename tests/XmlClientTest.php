@@ -71,15 +71,24 @@ class XmlClientTest extends \PHPUnit_Framework_TestCase
     }
 
     /** @expectedException RuntimeException */
-    public function testCanListSets()
+    public function testListSetsWithoutSetsThrowsException()
     {
         $this->client
             ->setUri($this->testRepo)
             ->listSets();
         $response = $this->client->getResponse();
-        // or noHierARchy
-        // how to test for two possibles?
 
-        //$this->assertArrayHasKey(AbstractAdapter::VERB_LIST_SETS, $response);
+        //var_dump($this->getExpectedException());
+    }
+
+    public function testCanListSets()
+    {
+        $uri = 'http://data.beeldengeluid.nl/oai-pmh';
+        $this->client
+            ->setUri($uri)
+            ->listSets();
+        $response = $this->client->getResponse();
+
+        $this->assertArrayHasKey(AbstractAdapter::VERB_LIST_SETS, $response);
     }
 }
