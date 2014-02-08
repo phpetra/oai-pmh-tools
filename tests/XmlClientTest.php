@@ -40,7 +40,10 @@ class XmlClientTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($this->testRepo . '?', $this->client->getUri());
     }
 
-    /** @expectedException RuntimeException */
+    /**
+     * @expectedException RuntimeException
+     * @expectedExceptionCode 101
+     */
     public function testNotSettingUriReturnsException()
     {
         $this->client->identify();
@@ -70,15 +73,16 @@ class XmlClientTest extends \PHPUnit_Framework_TestCase
         $this->assertArrayHasKey('metadataPrefix', $response[AbstractAdapter::VERB_LIST_METADATA_FORMATS]['metadataFormat'][0]);
     }
 
-    /** @expectedException RuntimeException */
+    /**
+     * @expectedException RuntimeException
+     * @expectedExceptionMessage noSetHierarchy
+     */
     public function testListSetsWithoutSetsThrowsException()
     {
         $this->client
             ->setUri($this->testRepo)
             ->listSets();
         $response = $this->client->getResponse();
-
-        //var_dump($this->getExpectedException());
     }
 
     public function testCanListSets()

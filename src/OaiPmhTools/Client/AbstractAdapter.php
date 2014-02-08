@@ -174,7 +174,7 @@ abstract class AbstractAdapter implements AdapterInterface {
     public function getUri()
     {
         if (null === $this->uri) {
-            throw new OaiServerException('The uri of the external repository is not set.');
+            throw new OaiServerException('The uri of the external repository is not set.', 101);
         }
         return trim($this->uri, '/') . '?';
     }
