@@ -9,16 +9,17 @@ For more information on the Archives Initiative Protocol for Metadata Harvesting
 
 This set of tools include:
 - An OaiPmhClient that sends requests to the external webservice.
-- A Harvester
+- A Harvester - first feature after, once client is finished
 - @todo build the Discovery / Explorer
 - @todo build the server side of things
 
 `Work in progress!!`
 
 Installation
-------------
+-------------
 
 Simplest is to add the following to `composer.json`:
+Although the package is not uploaded yet
 
 ```bash
 {
