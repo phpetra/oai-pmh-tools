@@ -19,7 +19,7 @@ Installation
 -------------
 
 Simplest is to add the following to `composer.json`:
-Although the package is not uploaded yet
+But the package is not on packagist yet.
 
 ```bash
 {
@@ -36,7 +36,7 @@ php composer.phar install
 ```
 
 Usage
------
+------
 
 ### The OaiPmhClient
 
