@@ -1,8 +1,6 @@
 <?php
 /**
  * @author PHPetra
- * Date: 2/1/14
- * Time: 4:48 PM
  * 
  */
 
@@ -13,7 +11,9 @@ use OaiPmhTools\Client\XmlClient;
 use OaiPmhTools\OaiServerException;
 
 /**
- * Test
+ * Testing a simple setup
+ * Need a live Internet connection to be able to do this
+ * Should maybe replace with @fixtures?
  *
  */
 class XmlClientTest extends \PHPUnit_Framework_TestCase
