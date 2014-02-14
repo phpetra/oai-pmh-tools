@@ -42,6 +42,9 @@ class XmlClient extends AbstractAdapter {
     }
 
 
+    /**
+     * This needs to be moved to the Abstract one
+     */
     public function listRecords()
     {
         if ($this->getResumptionToken()) {
@@ -50,6 +53,7 @@ class XmlClient extends AbstractAdapter {
 
     }
 
+// this one too
     public function listIdentifiers()
     {
 
