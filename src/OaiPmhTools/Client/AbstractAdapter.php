@@ -10,6 +10,7 @@ namespace OaiPmhTools\Client;
 
 use OaiPmhTools\OaiServerException;
 use OaiPmhTools\RuntimeException;
+use OaiPmhTools\Client\AdapterInterface;
 
 abstract class AbstractAdapter implements AdapterInterface {
 
@@ -139,9 +140,9 @@ abstract class AbstractAdapter implements AdapterInterface {
      * List records form external resource
      * Using resumptionToken
      * It should be able to restart form a specific resumptionToken
-     * TODO maybe something with a limit?
+     * 
      */
-    public function listRecords()
+    public function listRecords($limit = 1)
     {
         if ($this->getResumptionToken()) {
             $params = array(
@@ -159,7 +160,35 @@ abstract class AbstractAdapter implements AdapterInterface {
         }
 
         // TODO finfish this
+        $loop = 1;
+        while (true) {
+            $dom = $this->load($uri);
+            $resumptionToken = $dom->getElementsByTagname('resumptionToken')->item(0);
+            if (!$resumptionToken->nodeValue) {
+                // todo write finished message
+                break;
+            }
+
+
+
+            $records = $dom->getElementsByTagname('record');
+            foreach ($records as $record) {
+                $identifier = $record->getElementsByTagname('identifier')->item(0)->nodeValue;
+                $timestamp = $record->getElementsByTagname('datestamp')->item(0)->nodeValue;
+
+                $metadata = $record->getElementsByTagname('metadata')->item(0);
+                // TODO apply mapping
+
+                $data['identifier'] = $identifier;
+                $data['timestamp'] = $timestamp;
+
+                var_dump($data); die;
+
+            }
+            $loop++;
+        }
     }
+
 
     /**
      * Receives the required elements out of the response, as set in the requiredResponseElements

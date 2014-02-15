@@ -14,7 +14,7 @@ interface AdapterInterface {
     public function listMetadataFormats($identifier);
     public function listSets();
     public function listIdentifiers();
-    public function listRecords();
+    public function listRecords($limit);
     public function getRecord($identifier);
 
 }
