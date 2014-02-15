@@ -8,7 +8,7 @@ namespace OaiPmhTest;
 
 use OaiPmhTools\Client\AbstractAdapter;
 use OaiPmhTools\Client\XmlClient;
-use OaiPmhTools\OaiServerException;
+use OaiPmhTools\RuntimeException;
 
 /**
  * Testing a simple setup
@@ -21,7 +21,7 @@ class XmlClientTest extends \PHPUnit_Framework_TestCase
 
     protected $testRepo = 'http://www.avhumboldt.net/oai/oai.php';
 
-    /** @var  XmlCLient */
+    /** @var \OaiPmhTools\Client\XmlClient */
     protected $client;
 
     public function setUp()
@@ -95,4 +95,31 @@ class XmlClientTest extends \PHPUnit_Framework_TestCase
 
         $this->assertArrayHasKey(AbstractAdapter::VERB_LIST_SETS, $response);
     }
+
+    /**
+    * @expectedException RuntimeException
+    * @expectedExceptionMessage requires a metadataPrefix
+    */
+    public function testListRecordsWithoutMetdataPrefixThrowsException()
+    {
+        $this->client
+            ->setUri($this->testRepo)
+            ->listRecords();
+        $response = $this->client->getResponse();
+    }
+
+    public function testCanListRecords()
+    {
+        $uri = 'http://data.beeldengeluid.nl/oai-pmh';
+        $this->client
+            ->setUri($uri)
+            ->setMetadataPrefix('oai_dc')
+            ->listRecords()
+        ;
+
+        $response = $this->client->getResponse();
+
+        $this->assertContains('data', $response);
+    }
+
 }

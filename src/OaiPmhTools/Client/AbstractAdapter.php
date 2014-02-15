@@ -9,6 +9,7 @@
 namespace OaiPmhTools\Client;
 
 use OaiPmhTools\OaiServerException;
+use OaiPmhTools\RuntimeException;
 
 abstract class AbstractAdapter implements AdapterInterface {
 
@@ -40,7 +41,7 @@ abstract class AbstractAdapter implements AdapterInterface {
     protected $set;
 
     /** @var  string The metadataPrefix parameter for use in the request uri */
-    protected $metadataPrefix = 'oai_dc';
+    protected $metadataPrefix = null;
 
     /** @var  array Simple array to hold the required response elements */
     protected $response;
@@ -132,6 +133,32 @@ abstract class AbstractAdapter implements AdapterInterface {
         }
 
         $this->response[self::VERB_LIST_METADATA_FORMATS] = $data;
+    }
+
+    /**
+     * List records form external resource
+     * Using resumptionToken
+     * It should be able to restart form a specific resumptionToken
+     * TODO maybe something with a limit?
+     */
+    public function listRecords()
+    {
+        if ($this->getResumptionToken()) {
+            $params = array(
+                'verb' => self::VERB_LIST_RECORDS,
+                'resumptionToken' => $this->getResumptionToken()
+            );
+            $uri = $this->getUri() . http_build_query($params);
+        } else {
+            if (!$this->getMetadataPrefix()) {
+                throw new RuntimeException('ListRecords requires a metadataPrefix. None was set.');
+            }
+            $params = array('verb' => self::VERB_LIST_RECORDS);
+            // add set and emetdataPrefixe
+            $uri = $this->getUri() . http_build_query($params);
+        }
+
+        // TODO finfish this
     }
 
     /**
