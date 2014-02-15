@@ -88,8 +88,8 @@ abstract class AbstractAdapter implements AdapterInterface {
         $params = array('verb' => self::VERB_LIST_SETS);
         $uri = $this->getUri() . http_build_query($params);
 
-        $dom = $this->load($uri);
-        $sets = $dom->getElementsByTagName('set');
+        $doc = $this->load($uri);
+        $sets = $doc->getElementsByTagName('set');
 
         $data = array();
         foreach ($sets as $set) {
@@ -120,10 +120,10 @@ abstract class AbstractAdapter implements AdapterInterface {
 
         $uri = $this->getUri() . http_build_query($params);
 
-        $dom = $this->load($uri);
+        $doc = $this->load($uri);
 
         // extract metadata information
-        $metadataFormats = $dom->getElementsByTagName('metadataFormat');
+        $metadataFormats = $doc->getElementsByTagName('metadataFormat');
         $data = array();
         foreach ($metadataFormats as $metaFormat) {
             $format['metadataPrefix'] = $metaFormat->getElementsByTagname('metadataPrefix')->item(0)->nodeValue;
@@ -140,7 +140,7 @@ abstract class AbstractAdapter implements AdapterInterface {
      * List records form external resource
      * Using resumptionToken
      * It should be able to restart form a specific resumptionToken
-     * 
+     *
      */
     public function listRecords($limit = 1)
     {
@@ -154,36 +154,47 @@ abstract class AbstractAdapter implements AdapterInterface {
             if (!$this->getMetadataPrefix()) {
                 throw new RuntimeException('ListRecords requires a metadataPrefix. None was set.');
             }
-            $params = array('verb' => self::VERB_LIST_RECORDS);
-            // add set and emetdataPrefixe
+            $params = array(
+                'verb'      => self::VERB_LIST_RECORDS,
+                'metadataPrefix' => $this->getMetadataPrefix()
+            );
             $uri = $this->getUri() . http_build_query($params);
         }
 
-        // TODO finfish this
         $loop = 1;
         while (true) {
-            $dom = $this->load($uri);
-            $resumptionToken = $dom->getElementsByTagname('resumptionToken')->item(0);
+            if ($loop > $limit) {
+                $this->writeMsg("Quitting because the set limit of '{$limit}' was reached.");
+                break;
+            }
+            // clear response from earlier requests
+            $this->response[self::VERB_LIST_RECORDS] = null;
+
+            $this->writeMsg("Listing records, loop {$loop}.");
+
+            /** @var \DOMDocument $doc */
+            $doc = $this->load($uri);
+
+            $resumptionToken = $doc->getElementsByTagname('resumptionToken')->item(0);
             if (!$resumptionToken->nodeValue) {
-                // todo write finished message
+                $this->writeMsg('No more receptionToken in server response. All done.');
                 break;
             }
 
-
-
-            $records = $dom->getElementsByTagname('record');
+            $records = $doc->getElementsByTagname('record');
             foreach ($records as $record) {
                 $identifier = $record->getElementsByTagname('identifier')->item(0)->nodeValue;
                 $timestamp = $record->getElementsByTagname('datestamp')->item(0)->nodeValue;
 
                 $metadata = $record->getElementsByTagname('metadata')->item(0);
-                // TODO apply mapping
 
                 $data['identifier'] = $identifier;
                 $data['timestamp'] = $timestamp;
 
-                var_dump($data); die;
+                // TODO make a setter for the mapping and apply it to the metadata
+                $data['metadata'] = $metadata;
 
+                $this->response[self::VERB_LIST_RECORDS][] = $data;
             }
             $loop++;
         }
@@ -194,14 +205,14 @@ abstract class AbstractAdapter implements AdapterInterface {
      * Receives the required elements out of the response, as set in the requiredResponseElements
      *
      * @param $verb
-     * @param $dom
+     * @param $doc
      */
-    protected function receive($verb, $dom)
+    protected function receive($verb, $doc)
     {
         $responseElements = $this->requiredResponseElements[$verb];
         $data = array();
         foreach ($responseElements as $element) {
-            $data[$element] = $dom->getElementsByTagName($element)->item(0)->nodeValue;
+            $data[$element] = $doc->getElementsByTagName($element)->item(0)->nodeValue;
         }
 
         $this->response[$verb] = $data;
@@ -309,6 +320,10 @@ abstract class AbstractAdapter implements AdapterInterface {
     public function getResponse()
     {
         return $this->response;
+    }
+
+    protected function writeMsg($msg) {
+        fwrite(STDOUT, $msg . PHP_EOL);
     }
 
 } 
