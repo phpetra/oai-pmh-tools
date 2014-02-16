@@ -9,7 +9,8 @@ For more information on the Archives Initiative Protocol for Metadata Harvesting
 
 This set of tools include:
 - An OaiPmhClient that sends requests to the external webservice.
-- A Harvester - first feature after, once client is finished
+- A Harvester - first feature once client is finished
+- Build harvester with default mapper
 - @todo build the Discovery / Explorer
 - @todo build the server side of things
 
