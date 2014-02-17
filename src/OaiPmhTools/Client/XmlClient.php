@@ -41,13 +41,6 @@ class XmlClient extends AbstractAdapter {
         return $doc;
     }
 
-
-// this one too
-    public function listIdentifiers()
-    {
-
-    }
-
     public function getRecord($identifier)
     {
 

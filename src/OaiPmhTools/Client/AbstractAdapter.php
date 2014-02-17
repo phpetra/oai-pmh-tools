@@ -146,11 +146,64 @@ abstract class AbstractAdapter implements AdapterInterface {
         $this->response[self::VERB_LIST_METADATA_FORMATS] = $data;
     }
 
+    public function listIdentifiers($limit = 1)
+    {
+        if ($this->getResumptionToken()) {
+            $params = array(
+                'verb' => self::VERB_LIST_IDENTIFIERS,
+                'resumptionToken' => $this->getResumptionToken()
+            );
+            $uri = $this->getUri() . http_build_query($params);
+        } else {
+            if (!$this->getMetadataPrefix()) {
+                throw new RuntimeException('ListIdentifiers requires a metadataPrefix. None was set.');
+            }
+            $params = array(
+                'verb'      => self::VERB_LIST_IDENTIFIERS,
+                'metadataPrefix' => $this->getMetadataPrefix()
+            );
+            $uri = $this->getUri() . http_build_query($params);
+        }
+
+        $loop = 1;
+        while (true) {
+            if ($loop > $limit) {
+                $this->writeMsg("Quitting because the set limit of '{$limit}' was reached.");
+                break;
+            }
+            // clear response from earlier requests
+            $this->response[self::VERB_LIST_IDENTIFIERS] = null;
+
+            $this->writeMsg("Listing identifiers, loop {$loop}.");
+
+            /** @var \DOMDocument $doc */
+            $doc = $this->load($uri);
+
+            $resumptionToken = $doc->getElementsByTagname('resumptionToken')->item(0);
+            if (!$resumptionToken->nodeValue) {
+                $this->writeMsg('No more receptionToken in server response. All done.');
+                break;
+            }
+
+            $records = $doc->getElementsByTagname('header');
+            foreach ($records as $record) {
+                $identifier = $record->getElementsByTagname('identifier')->item(0)->nodeValue;
+                $timestamp = $record->getElementsByTagname('datestamp')->item(0)->nodeValue;
+
+                $data['identifier'] = $identifier;
+                $data['timestamp'] = $timestamp;
+
+                $this->response[self::VERB_LIST_IDENTIFIERS][] = $data;
+            }
+            $loop++;
+        }
+    }
+
     /**
      * List records form external resource
      * Using resumptionToken
      * It should be able to restart form a specific resumptionToken
-     *
+     * TODO implement the restart
      */
     public function listRecords($limit = 1)
     {
