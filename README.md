@@ -54,6 +54,12 @@ Setting up the client is as simple as:
 use OaiPmhTools\Client\XmlClient;
 
 $client = new XmlClient();
+// Listing Identifiers
+$uri = 'http://data.beeldengeluid.nl/oai-pmh';
+$client
+    ->setUri($uri)
+    ->setMetadataPrefix('oai_dc')
+    ->listIdentifiers()
 
 ```
 
