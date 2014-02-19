@@ -61,15 +61,7 @@ abstract class AbstractAdapter implements AdapterInterface {
         AbstractAdapter::VERB_GET_RECORD               => array('identifier', 'metadataPrefix'), // both required
     );
 
-    /** @var array The possible errors and exceptions, per verb */
-    protected $requiredResponseElements = array(
-        AbstractAdapter::VERB_IDENTIFY                 => array('repositoryName', 'baseURL', 'protocolVersion', 'earliestDatestamp', 'deletedRecord', 'granularity'),
-        AbstractAdapter::VERB_LIST_METADATA_FORMATS    => array('metadataFormat'),
-        AbstractAdapter::VERB_LIST_SETS                => array('badArgument', 'badResumptionToken', 'noSetHierarchy'),
-        AbstractAdapter::VERB_LIST_IDENTIFIERS         => array('badArgument', 'badResumptionToken', 'cannotDisseminateFormat', 'noRecordsMatch', 'noSetHierarchy'),
-        AbstractAdapter::VERB_LIST_RECORDS             => array('badArgument', 'badResumptionToken', 'cannotDisseminateFormat', 'noRecordsMatch', 'noSetHierarchy'),
-        AbstractAdapter::VERB_GET_RECORD               => array('badArgument', 'cannotDisseminateFormat', 'idDoesNotExist'),
-    );
+    // TODO implement from and until
 
     /**
      * Retrieve information about a repository
@@ -80,7 +72,15 @@ abstract class AbstractAdapter implements AdapterInterface {
         $uri = $this->getUri() . http_build_query($params);
 
         $this->writeMsg('Calling Identify');
-        $this->receive(self::VERB_IDENTIFY, $this->load($uri));
+        $doc = $this->load($uri);
+
+        $responseElements = array('repositoryName', 'baseURL', 'protocolVersion', 'earliestDatestamp', 'deletedRecord', 'granularity');
+        $data = array();
+        foreach ($responseElements as $element) {
+            $data[$element] = $doc->getElementsByTagName($element)->item(0)->nodeValue;
+        }
+
+        $this->response = $data;
     }
 
 
@@ -109,7 +109,7 @@ abstract class AbstractAdapter implements AdapterInterface {
             $this->writeMsg('No sets found');
         }
 
-        $this->response[self::VERB_LIST_SETS] = $data;
+        $this->response = $data;
     }
 
     /**
@@ -143,7 +143,7 @@ abstract class AbstractAdapter implements AdapterInterface {
             $this->writeMsg("Found available metadata format '{$format['metadataPrefix']}'.");
         }
 
-        $this->response[self::VERB_LIST_METADATA_FORMATS] = $data;
+        $this->response = $data;
     }
 
     public function listIdentifiers($limit = 1)
@@ -172,7 +172,7 @@ abstract class AbstractAdapter implements AdapterInterface {
                 break;
             }
             // clear response from earlier requests
-            $this->response[self::VERB_LIST_IDENTIFIERS] = null;
+            $this->response = null;
 
             $this->writeMsg("Listing identifiers, loop {$loop}.");
 
@@ -193,7 +193,7 @@ abstract class AbstractAdapter implements AdapterInterface {
                 $data['identifier'] = $identifier;
                 $data['timestamp'] = $timestamp;
 
-                $this->response[self::VERB_LIST_IDENTIFIERS][] = $data;
+                $this->response[] = $data;
             }
             $loop++;
         }
@@ -203,7 +203,7 @@ abstract class AbstractAdapter implements AdapterInterface {
      * List records form external resource
      * Using resumptionToken
      * It should be able to restart form a specific resumptionToken
-     * TODO implement the restart
+     * TODO implement the restart from resumptionToken
      */
     public function listRecords($limit = 1)
     {
@@ -231,7 +231,7 @@ abstract class AbstractAdapter implements AdapterInterface {
                 break;
             }
             // clear response from earlier requests
-            $this->response[self::VERB_LIST_RECORDS] = null;
+            $this->response = null;
 
             $this->writeMsg("Listing records, loop {$loop}.");
 
@@ -253,34 +253,13 @@ abstract class AbstractAdapter implements AdapterInterface {
 
                 $data['identifier'] = $identifier;
                 $data['timestamp'] = $timestamp;
-
-                // TODO make a setter for the mapping and apply it to the metadata
                 $data['metadata'] = $metadata;
 
-                $this->response[self::VERB_LIST_RECORDS][] = $data;
+                $this->response[] = $data;
             }
             $loop++;
         }
     }
-
-
-    /**
-     * Receives the required elements out of the response, as set in the required ResponseElements
-     *
-     * @param $verb
-     * @param $doc
-     */
-    protected function receive($verb, $doc)
-    {
-        $responseElements = $this->requiredResponseElements[$verb];
-        $data = array();
-        foreach ($responseElements as $element) {
-            $data[$element] = $doc->getElementsByTagName($element)->item(0)->nodeValue;
-        }
-
-        $this->response[$verb] = $data;
-    }
-
 
     /**
      * Generic way of handling the errors returned by the OAI-PMH server

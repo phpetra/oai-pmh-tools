@@ -57,8 +57,8 @@ class XmlClientTest extends \PHPUnit_Framework_TestCase
             ->identify();
         $response = $this->client->getResponse();
 
-        $this->assertArrayHasKey('repositoryName', $response[AbstractAdapter::VERB_IDENTIFY]);
-        $this->assertArrayHasKey('baseURL', $response[AbstractAdapter::VERB_IDENTIFY]);
+        $this->assertArrayHasKey('repositoryName', $response);
+        $this->assertArrayHasKey('baseURL', $response);
         // we could test all required elements but might not be needed
     }
 
@@ -69,8 +69,8 @@ class XmlClientTest extends \PHPUnit_Framework_TestCase
             ->listMetadataFormats();
         $response = $this->client->getResponse();
 
-        $this->assertArrayHasKey('metadataFormat', $response[AbstractAdapter::VERB_LIST_METADATA_FORMATS]);
-        $this->assertArrayHasKey('metadataPrefix', $response[AbstractAdapter::VERB_LIST_METADATA_FORMATS]['metadataFormat'][0]);
+        $this->assertArrayHasKey('metadataFormat', $response);
+        $this->assertArrayHasKey('metadataPrefix', $response['metadataFormat'][0]);
     }
 
     /**
@@ -93,7 +93,7 @@ class XmlClientTest extends \PHPUnit_Framework_TestCase
             ->listSets();
         $response = $this->client->getResponse();
 
-        $this->assertArrayHasKey(AbstractAdapter::VERB_LIST_SETS, $response);
+        $this->assertArrayHasKey('set', $response);
     }
 
     /**
@@ -118,8 +118,24 @@ class XmlClientTest extends \PHPUnit_Framework_TestCase
         ;
 
         $response = $this->client->getResponse();
+        $this->assertGreaterThan(1, count($response));
+        $this->assertArrayHasKey('identifier', $response[0]);
+        $this->assertArrayHasKey('timestamp', $response[0]);
+        $this->assertArrayHasKey('metadata', $response[0]);
+    }
 
-        $this->assertContains('data', $response);
+    public function testCanListIdentifiers()
+    {
+        $uri = 'http://data.beeldengeluid.nl/oai-pmh';
+        $this->client
+            ->setUri($uri)
+            ->setMetadataPrefix('oai_dc')
+            ->listIdentifiers(1)
+        ;
+
+        $response = $this->client->getResponse();
+        $this->assertGreaterThan(1, count($response));
+        $this->assertArrayHasKey('identifier', $response[0]);
     }
 
 }
